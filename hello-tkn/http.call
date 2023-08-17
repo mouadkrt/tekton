@@ -1,0 +1,1 @@
+curl --location 'https://el-my-app-trigger-listener-route-ns1.apps-crc.testing' --header 'Content-Type: application/json' --data '{"name": "value sent from an external http call"}'
