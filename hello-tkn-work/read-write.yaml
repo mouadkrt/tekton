@@ -1,0 +1,57 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: new-pipeline
+  namespace: ns1
+spec:
+  tasks:
+    - name: write-data01
+      taskRef:
+        kind: Task
+        name: write-data01
+      workspaces:
+        - name: workspace1
+          workspace: workspace1
+    - name: read-data01
+      runAfter:
+        - write-data01
+      taskRef:
+        kind: Task
+        name: read-data01
+      workspaces:
+        - name: workspace1
+          workspace: workspace1
+  workspaces:
+    - name: workspace1
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: write-data01
+  namespace: ns1
+spec:
+  steps:
+    - image: registry.redhat.io/ubi7/ubi-minimal
+      name: npm-install
+      resources: {}
+      script: |
+        #!/bin/bash
+        echo "data01" > /workspace/workspace1/data.out
+  workspaces:
+    - name: workspace1
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: read-data01
+  namespace: ns1
+spec:
+  steps:
+    - image: registry.redhat.io/ubi7/ubi-minimal
+      name: npm-install
+      resources: {}
+      script: |
+        #!/bin/bash
+        cat /workspace/workspace1/data.out
+  workspaces:
+    - name: workspace1
