@@ -70,7 +70,7 @@ spec:
           - name: appname
             value: $(tt.params.appname)
         pipelineRef:
-          name: example1
+          name: hello-tkn
         serviceAccountName: pipeline
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
