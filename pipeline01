@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: example1
+  name: hello-tkn
   namespace: ns1
 spec:
   params:
@@ -16,12 +16,12 @@ spec:
           value: $(params.appname)
       taskRef:
         kind: Task
-        name: example-task
+        name: echo-hello
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: example-task
+  name: echo-hello
   namespace: ns1
 spec:
   params:
