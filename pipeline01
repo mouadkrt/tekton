@@ -1,0 +1,96 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: example1
+  namespace: ns1
+spec:
+  params:
+    - default: defautVal
+      description: name of the app
+      name: appname
+      type: string
+  tasks:
+    - name: example-task
+      params:
+        - name: appname
+          value: $(params.appname)
+      taskRef:
+        kind: Task
+        name: example-task
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: example-task
+  namespace: ns1
+spec:
+  params:
+    - default: mouad
+      name: appname
+      type: string
+  steps:
+    - image: registry.redhat.io/ubi7/ubi-minimal
+      name: step01
+      resources: {}
+      script: |
+        #!/bin/bash
+        echo "test munisys 123 $(inputs.params.appname)"
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: my-app-trigger-listener
+  namespace: ns1
+spec:
+  namespaceSelector: {}
+  resources: {}
+  serviceAccountName: pipeline
+  triggers:
+    - triggerRef: my-app-trigger
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: my-app-trigger-template
+  namespace: ns1
+spec:
+  params:
+    - default: my-app
+      description: The application name
+      name: appname
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: my-app-pipeline-run-
+        labels:
+          app-name: my-app
+      spec:
+        params:
+          - name: appname
+            value: $(tt.params.appname)
+        pipelineRef:
+          name: example1
+        serviceAccountName: pipeline
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: my-app-trigger-binding
+  namespace: ns1
+spec:
+  params:
+    - name: appname
+      value: $(body.name)
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: my-app-trigger
+  namespace: ns1
+spec:
+  bindings:
+  - kind: TriggerBinding
+    ref: my-app-trigger-binding
+  template:
+    ref: my-app-trigger-template
